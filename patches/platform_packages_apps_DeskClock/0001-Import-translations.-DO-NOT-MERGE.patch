@@ -1,0 +1,178 @@
+From a8fde83b5add78feb2ed01694717a09b66c48907 Mon Sep 17 00:00:00 2001
+From: Bill Yi <byi@google.com>
+Date: Fri, 12 Apr 2019 11:04:18 -0700
+Subject: [PATCH 01/10] Import translations. DO NOT MERGE
+
+Change-Id: I59b6a18442b3d642d9300ed7c064bb5efc431464
+Auto-generated-cl: translation import
+---
+ res/values-da/strings.xml |  6 +++---
+ res/values-gl/strings.xml |  6 +++---
+ res/values-hi/strings.xml |  4 ++--
+ res/values-is/strings.xml |  4 ++--
+ res/values-ja/strings.xml |  4 ++--
+ res/values-my/strings.xml | 20 ++++++++++----------
+ 6 files changed, 22 insertions(+), 22 deletions(-)
+
+diff --git a/res/values-da/strings.xml b/res/values-da/strings.xml
+index 122cf7743..8ebd92623 100644
+--- a/res/values-da/strings.xml
++++ b/res/values-da/strings.xml
+@@ -182,7 +182,7 @@
+     <string name="unmute_alarm_volume" msgid="2655009276035357497">"Slå lyden til"</string>
+     <string name="silent_default_alarm_ringtone" msgid="6012855475009670997">"Standardringetonen for alarmer er lydløs"</string>
+     <string name="change_setting_action" msgid="1224356633832430160">"Skift"</string>
+-    <string name="app_notifications_blocked" msgid="7249150789023936889">"Underretninger fra urappen er blokeret"</string>
++    <string name="app_notifications_blocked" msgid="7249150789023936889">"Notifikationer fra urappen er blokeret"</string>
+     <string name="alarms_blocked_by_dnd" msgid="6089433757505898969">"Enheden er indstillet til total stilhed"</string>
+     <string name="volume_button_setting_title" msgid="6937131248843413357">"Lydstyrkeknapper"</string>
+   <string-array name="volume_button_setting_entries">
+@@ -369,8 +369,8 @@
+     <string name="shortcut_start_screensaver_short" msgid="3414762073311954753">"Pauseskærm"</string>
+     <string name="shortcut_start_screensaver_long" msgid="6134275671119484907">"Start pauseskærm"</string>
+     <string name="alarm_settings" msgid="2947147071388290814">"Alarmer"</string>
+-    <string name="timer_service_desc" msgid="2256002649882602433">"Behandler handlinger fra underretninger for timeren."</string>
+-    <string name="stopwatch_service_desc" msgid="9220132827343760767">"Behandler handlinger fra underretninger for stopuret."</string>
++    <string name="timer_service_desc" msgid="2256002649882602433">"Behandler handlinger fra notifikationer for timeren."</string>
++    <string name="stopwatch_service_desc" msgid="9220132827343760767">"Behandler handlinger fra notifikationer for stopuret."</string>
+     <string name="swn_paused" msgid="6364358842808263589">"Sat på pause"</string>
+     <string name="description_direction_right" msgid="5709209043267548985">"Stryg til højre for at slå fra"</string>
+     <string name="description_direction_left" msgid="7448141043674998679">"Stryg til venstre for at udsætte"</string>
+diff --git a/res/values-gl/strings.xml b/res/values-gl/strings.xml
+index 276718f7b..0597966f7 100644
+--- a/res/values-gl/strings.xml
++++ b/res/values-gl/strings.xml
+@@ -267,8 +267,8 @@
+   </string-array>
+     <string name="automatic_home_clock" msgid="6274174710735449252">"Reloxo da túa cidade automático"</string>
+     <string name="automatic_home_clock_summary" msgid="6020476321040807273">"Mentres viaxas nunha zona cunha hora diferente, engade un reloxo coa hora da túa cidade"</string>
+-    <string name="home_time_zone" msgid="9199730676287974501">"Zona horaria local"</string>
+-    <string name="home_time_zone_title" msgid="807894493443834624">"Zona horaria local"</string>
++    <string name="home_time_zone" msgid="9199730676287974501">"Fuso horario local"</string>
++    <string name="home_time_zone_title" msgid="807894493443834624">"Fuso horario local"</string>
+     <string name="city_checked" msgid="616847871968019">"Marcouse <xliff:g id="CITY_NAME">%s</xliff:g>"</string>
+     <string name="city_unchecked" msgid="710212932781145918">"Desmarcouse <xliff:g id="CITY_NAME">%s</xliff:g>"</string>
+   <string-array name="timezone_labels">
+@@ -294,7 +294,7 @@
+     <item msgid="7776299003105932407">"Santiago"</item>
+     <item msgid="8636989494746218677">"Terra Nova"</item>
+     <item msgid="4402541016410147505">"Brasilia"</item>
+-    <item msgid="2251184440733164084">"Bos Aires"</item>
++    <item msgid="2251184440733164084">"Buenos Aires"</item>
+     <item msgid="6202926618569004969">"Grenlandia"</item>
+     <item msgid="2355275037115290628">"Montevideo"</item>
+     <item msgid="1377549694711708945">"Atlántico Medio"</item>
+diff --git a/res/values-hi/strings.xml b/res/values-hi/strings.xml
+index 77d7d0a48..e110e0f39 100644
+--- a/res/values-hi/strings.xml
++++ b/res/values-hi/strings.xml
+@@ -231,8 +231,8 @@
+     <string name="timer_reset" msgid="7848424809190171640">"रीसेट करें"</string>
+     <string name="timer_cancel" msgid="3572868404230815644">"अभी नहीं"</string>
+     <string name="timer_canceled" msgid="7327923392567128060">"टाइमर रोक दिया गया"</string>
+-    <string name="timer_times_up" msgid="9190440395938519009">"समय समाप्त"</string>
+-    <string name="timer_multi_times_up" msgid="1239104626836080409">"<xliff:g id="NUM_TIMERS">%d</xliff:g> टाइमर की समय-सीमा समाप्त"</string>
++    <string name="timer_times_up" msgid="9190440395938519009">"समय खत्म"</string>
++    <string name="timer_multi_times_up" msgid="1239104626836080409">"<xliff:g id="NUM_TIMERS">%d</xliff:g> टाइमर की समय-सीमा खत्म"</string>
+     <string name="timer_multi_missed" msgid="9085073572920385362">"<xliff:g id="NUMBER">%d</xliff:g> टाइमर छूट गए"</string>
+     <string name="timer_notification_label" msgid="4933184831583137249">"टाइमर"</string>
+     <string name="missed_timer_notification_label" msgid="6661928727623284334">"छूटा हुआ टाइमर"</string>
+diff --git a/res/values-is/strings.xml b/res/values-is/strings.xml
+index 719b46ea9..d76e48be3 100644
+--- a/res/values-is/strings.xml
++++ b/res/values-is/strings.xml
+@@ -392,8 +392,8 @@
+     <string name="world_day_of_week_label" msgid="5911196322328341288">"/ <xliff:g id="LABEL">%s</xliff:g>"</string>
+     <string name="world_time_ahead" msgid="625559988238637652">"<xliff:g id="TIME">%1$s</xliff:g> á undan"</string>
+     <string name="world_time_behind" msgid="5395771290726167865">"<xliff:g id="TIME">%1$s</xliff:g> á eftir"</string>
+-    <string name="world_hours_minutes_ahead" msgid="5132012793021696377">"<xliff:g id="HOURS">%1$s</xliff:g> klst. og <xliff:g id="MINUTES">%2$s</xliff:g> mín. á undan"</string>
+-    <string name="world_hours_minutes_behind" msgid="8978567362140923698">"<xliff:g id="HOURS">%1$s</xliff:g> klst. og <xliff:g id="MINUTES">%2$s</xliff:g> mín. á eftir"</string>
++    <string name="world_hours_minutes_ahead" msgid="5132012793021696377">"<xliff:g id="HOURS">%1$s</xliff:g> og <xliff:g id="MINUTES">%2$s</xliff:g> á undan"</string>
++    <string name="world_hours_minutes_behind" msgid="8978567362140923698">"<xliff:g id="HOURS">%1$s</xliff:g> og <xliff:g id="MINUTES">%2$s</xliff:g> á eftir"</string>
+     <string name="world_hours_tomorrow" msgid="2504465609269004794">"Á morgun kl. <xliff:g id="TIME">%1$s</xliff:g>"</string>
+     <string name="world_hours_yesterday" msgid="4425086322610882745">"Í gær kl. <xliff:g id="TIME">%1$s</xliff:g>"</string>
+     <string name="world_tomorrow" msgid="7633067935455580920">"Á morgun"</string>
+diff --git a/res/values-ja/strings.xml b/res/values-ja/strings.xml
+index d5bdaba00..8c3f66f40 100644
+--- a/res/values-ja/strings.xml
++++ b/res/values-ja/strings.xml
+@@ -30,7 +30,7 @@
+     <string name="remove_sound" msgid="2064643204455734239">"削除"</string>
+     <string name="confirm_remove_custom_ringtone" msgid="1724111242265208553">"この音を使用するアラームとタイマーでは、代わりにデフォルトの音が使用されます。"</string>
+     <string name="your_sounds" msgid="1672779351352629681">"マイサウンド"</string>
+-    <string name="device_sounds" msgid="1584894148222639823">"端末のサウンド"</string>
++    <string name="device_sounds" msgid="1584894148222639823">"デバイスのサウンド"</string>
+     <string name="custom_ringtone_lost_permissions" msgid="3406310054255354331">"音声コンテンツにアクセスできません。"</string>
+     <string name="default_timer_ringtone_title" msgid="1370799536406862317">"タイマー完了"</string>
+     <string name="alarm_tomorrow" msgid="131356848787643420">"明日"</string>
+@@ -183,7 +183,7 @@
+     <string name="silent_default_alarm_ringtone" msgid="6012855475009670997">"アラーム音のデフォルト設定はマナーモードです"</string>
+     <string name="change_setting_action" msgid="1224356633832430160">"変更"</string>
+     <string name="app_notifications_blocked" msgid="7249150789023936889">"時計の通知はブロックされています"</string>
+-    <string name="alarms_blocked_by_dnd" msgid="6089433757505898969">"端末は [サイレント] に設定されています"</string>
++    <string name="alarms_blocked_by_dnd" msgid="6089433757505898969">"デバイスは [サイレント] に設定されています"</string>
+     <string name="volume_button_setting_title" msgid="6937131248843413357">"音量ボタン"</string>
+   <string-array name="volume_button_setting_entries">
+     <item msgid="7972756698723318690">"スヌーズ"</item>
+diff --git a/res/values-my/strings.xml b/res/values-my/strings.xml
+index 2e28d65e4..6348b8943 100644
+--- a/res/values-my/strings.xml
++++ b/res/values-my/strings.xml
+@@ -193,7 +193,7 @@
+     <string name="label_description" msgid="8736179296142915727">"အညွှန်း"</string>
+     <string name="ringtone_description" msgid="7580922112921069925">"သံစဉ်"</string>
+     <string name="menu_alarm" msgid="4772010125376647519">"နှိုးစက်"</string>
+-    <string name="menu_timer" msgid="6459070074762877114">"အချိန်တိုင်းစက်"</string>
++    <string name="menu_timer" msgid="6459070074762877114">"တိုင်မာ"</string>
+     <string name="menu_clock" msgid="5612760670606829805">"နာရီ"</string>
+     <string name="menu_stopwatch" msgid="3396117705293574701">"အချိန်ဖမ်းနာရီ"</string>
+     <string name="button_alarms" msgid="3907838219512538763">"နှိုးစက် ထည့်ရန်"</string>
+@@ -219,7 +219,7 @@
+     <string name="sw_share_main" msgid="7703563468204234405">"ကျွန်ုပ်၏ အချိန်မှာ <xliff:g id="TIME">%s</xliff:g>"</string>
+     <string name="sw_share_laps" msgid="614390674795945007">"တာ အချိန်များ:"</string>
+     <string name="sw_notification_lap_number" msgid="3535420316052647126">"တာ<xliff:g id="NUMBER">%d</xliff:g>"</string>
+-    <string name="timer_add_timer" msgid="862733633862574752">"အချိန်တိုင်းစက် ထည့်ရန်"</string>
++    <string name="timer_add_timer" msgid="862733633862574752">"တိုင်မာ ထည့်ရန်"</string>
+     <string name="timer_start" msgid="6158486445614356442">"စတင်ရန်"</string>
+     <string name="timer_delete" msgid="8699122001991909302">"ဖျက်ရန်"</string>
+     <string name="timer_descriptive_delete" msgid="8794915342760383536">"<xliff:g id="NUMBER_STRING">%s</xliff:g> ကို ဖျက်မယ်"</string>
+@@ -230,15 +230,15 @@
+     <string name="timer_stop_all" msgid="9080780442843034376">"အချိန်တိုင်းကိရိယာများအားလုံး ရပ်ရန်"</string>
+     <string name="timer_reset" msgid="7848424809190171640">"ပြင်ဆင်သတ်မှတ်ရန်"</string>
+     <string name="timer_cancel" msgid="3572868404230815644">"မလုပ်တော့"</string>
+-    <string name="timer_canceled" msgid="7327923392567128060">"အချိန်တိုင်းစက် ဖျက်သိမ်းလိုက်ပြီ"</string>
++    <string name="timer_canceled" msgid="7327923392567128060">"တိုင်မာ ဖျက်သိမ်းလိုက်ပြီ"</string>
+     <string name="timer_times_up" msgid="9190440395938519009">"အချိန်ပြည့်သွားပါပြီ"</string>
+     <string name="timer_multi_times_up" msgid="1239104626836080409">"<xliff:g id="NUM_TIMERS">%d</xliff:g> အချိန်တိုင်းကိရိယာ သက်တမ်းကုန်ပါပြီ"</string>
+     <string name="timer_multi_missed" msgid="9085073572920385362">"သတိပေးချက် <xliff:g id="NUMBER">%d</xliff:g> ခုလွတ်သွားသည်"</string>
+-    <string name="timer_notification_label" msgid="4933184831583137249">"အချိန်တိုင်းစက်"</string>
++    <string name="timer_notification_label" msgid="4933184831583137249">"တိုင်မာ"</string>
+     <string name="missed_timer_notification_label" msgid="6661928727623284334">"လွတ်သွားသည့် သတိပေးချက်"</string>
+     <string name="missed_named_timer_notification_label" msgid="665604640028289175">"လွတ်သွားသည့် သတိပေးချက်− <xliff:g id="NAME">%s</xliff:g>"</string>
+     <string name="timer_pause" msgid="3748323712728398743">"ရပ်တန့်ရန်"</string>
+-    <string name="timer_reset_all" msgid="7530633132757866087">"အချိန်တိုင်းစက် အားလုံး ပြင်ဆင်သတ်မှတ်ရန်"</string>
++    <string name="timer_reset_all" msgid="7530633132757866087">"တိုင်မာ အားလုံး ပြင်ဆင်သတ်မှတ်ရန်"</string>
+     <string name="hours_minutes_seconds" msgid="5680088738059791288">"<xliff:g id="HOURS">%d</xliff:g>:<xliff:g id="MINUTES">%02d</xliff:g>:<xliff:g id="SECONDS">%02d</xliff:g>"</string>
+     <string name="minutes_seconds" msgid="6189446107009577914">"<xliff:g id="MINUTES">%d</xliff:g>:<xliff:g id="SECONDS">%02d</xliff:g>"</string>
+     <!-- no translation found for seconds (6550091082396571898) -->
+@@ -376,12 +376,12 @@
+     <string name="description_direction_left" msgid="7448141043674998679">"တစ်မှေးအိပ်ရန် ဘယ်ဘက်သို့ ပွတ်ဆွဲပါ"</string>
+     <string name="description_direction_both" msgid="1841309486023845685">"ပြန်မှေးရန် ဘယ်ဘက်နှင့် ပိတ်ရန် ညာဘက်သို့ ပွတ်ဆွဲပါ။"</string>
+     <string name="timer_settings" msgid="7955522143086154795">"အချိန်တိုင်းစက်များ"</string>
+-    <string name="timer_vibrate_title" msgid="7788920024785587518">"အချိန်တိုင်းစက် တုန်ခါမှု"</string>
+-    <string name="timer_paused" msgid="5941160896040771462">"အချိန်တိုင်းစက် ရပ်တန့်ထား"</string>
+-    <string name="timers_stopped" msgid="3186191253226005149">"အချိန်တိုင်းစက် <xliff:g id="NUMBER">%d</xliff:g> ကြိမ် ရပ်တန့်ခဲ့"</string>
++    <string name="timer_vibrate_title" msgid="7788920024785587518">"တိုင်မာ တုန်ခါမှု"</string>
++    <string name="timer_paused" msgid="5941160896040771462">"တိုင်မာ ရပ်တန့်ထား"</string>
++    <string name="timers_stopped" msgid="3186191253226005149">"တိုင်မာ <xliff:g id="NUMBER">%d</xliff:g> ကြိမ် ရပ်တန့်ခဲ့"</string>
+     <string name="all_timers_stopped_notif" msgid="883027111895833440">"အချိန်မှတ်ကိရိယာကို မြင်နိုင်ရန် တို့ထိပါ"</string>
+-    <string name="timers_in_use" msgid="5570729467344408506">"အချိန်တိုင်းစက် <xliff:g id="NUMBER">%d</xliff:g>"</string>
+-    <string name="next_timer_notif" msgid="6136454740115613653">"နောက် အချိန်တိုင်းစက် တစ်ခု: <xliff:g id="TIME_REMAINING">%s</xliff:g>"</string>
++    <string name="timers_in_use" msgid="5570729467344408506">"တိုင်မာ <xliff:g id="NUMBER">%d</xliff:g>"</string>
++    <string name="next_timer_notif" msgid="6136454740115613653">"နောက် တိုင်မာ တစ်ခု: <xliff:g id="TIME_REMAINING">%s</xliff:g>"</string>
+     <string name="screensaver_settings" msgid="1780742944194267226">"ဖန်သားပြင်ချွေတာမှုစနစ် ဆက်တင်များ"</string>
+     <string name="night_mode_title" msgid="5983813889469616299">"ညသုံး မုဒ်"</string>
+     <string name="night_mode_summary" msgid="1017350187324162631">"ခပ်မှိန်မှိန် ပြသမှု (အမှောင်ခန်းများအတွက်)"</string>
+-- 
+2.17.1
+

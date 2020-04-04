@@ -1,18 +1,18 @@
-From 04358dbe963f27e266124d83f6121f2af86352e5 Mon Sep 17 00:00:00 2001
+From 43e78dbdcf860192af1210a9e7d43e6fb9d04270 Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Tue, 20 Feb 2018 23:04:50 +0100
-Subject: [PATCH] Make BTM_BYPASS_EXTRA_ACL_SETUP dynamic
+Subject: [PATCH 1/2] Make BTM_BYPASS_EXTRA_ACL_SETUP dynamic
 
 Change-Id: Icb0868566b29b053ed7e83c9fd32e225af3f2e46
 ---
- hci/include/bt_hci_bdroid.h |  3 +++
- include/bt_target.h         |  3 +++
- stack/btm/btm_acl.cc        | 20 ++++++++++----------
- stack/btm/btm_sec.cc        | 18 +++++++++---------
+ hci/include/bt_hci_bdroid.h  |  3 +++
+ internal_include/bt_target.h |  3 +++
+ stack/btm/btm_acl.cc         | 20 ++++++++++----------
+ stack/btm/btm_sec.cc         | 18 +++++++++---------
  4 files changed, 25 insertions(+), 19 deletions(-)
 
 diff --git a/hci/include/bt_hci_bdroid.h b/hci/include/bt_hci_bdroid.h
-index aa193d0..6c82f19 100644
+index cf2c1136f..e2844db82 100644
 --- a/hci/include/bt_hci_bdroid.h
 +++ b/hci/include/bt_hci_bdroid.h
 @@ -32,6 +32,9 @@
@@ -25,10 +25,10 @@ index aa193d0..6c82f19 100644
  
  /******************************************************************************
   *  Constants & Macros
-diff --git a/include/bt_target.h b/include/bt_target.h
-index eadfc92..bf1f95d 100644
---- a/include/bt_target.h
-+++ b/include/bt_target.h
+diff --git a/internal_include/bt_target.h b/internal_include/bt_target.h
+index 67a67c56d..3021ca37b 100644
+--- a/internal_include/bt_target.h
++++ b/internal_include/bt_target.h
 @@ -32,6 +32,9 @@
  #ifdef HAS_BDROID_BUILDCFG
  #include "bdroid_buildcfg.h"
@@ -40,10 +40,10 @@ index eadfc92..bf1f95d 100644
  #include "bt_types.h" /* This must be defined AFTER buildcfg.h */
  
 diff --git a/stack/btm/btm_acl.cc b/stack/btm/btm_acl.cc
-index 8df6acb..7eba37d 100644
+index 6daf2d23c..ed07e8105 100644
 --- a/stack/btm/btm_acl.cc
 +++ b/stack/btm/btm_acl.cc
-@@ -1164,17 +1164,17 @@ void btm_read_remote_ext_features_failed(uint8_t status, uint16_t handle) {
+@@ -1208,17 +1208,17 @@ void btm_read_remote_ext_features_failed(uint8_t status, uint16_t handle) {
  void btm_establish_continue(tACL_CONN* p_acl_cb) {
    tBTM_BL_EVENT_DATA evt_data;
    BTM_TRACE_DEBUG("btm_establish_continue");
@@ -68,14 +68,14 @@ index 8df6acb..7eba37d 100644
 +    }
    }
 -#endif
-   p_acl_cb->link_up_issued = true;
- 
-   /* If anyone cares, tell him database changed */
+   if (p_acl_cb->link_up_issued) {
+     BTM_TRACE_ERROR("%s: Already link is up ", __func__);
+     return;
 diff --git a/stack/btm/btm_sec.cc b/stack/btm/btm_sec.cc
-index 60a3a17..5d36ef9 100644
+index 1ff4eeddf..60b64bd79 100644
 --- a/stack/btm/btm_sec.cc
 +++ b/stack/btm/btm_sec.cc
-@@ -4490,15 +4490,15 @@ void btm_sec_connected(const RawAddress& bda, uint16_t handle, uint8_t status,
+@@ -4369,15 +4369,15 @@ void btm_sec_connected(const RawAddress& bda, uint16_t handle, uint8_t status,
    if (p_acl_cb) {
  /* whatever is in btm_establish_continue() without reporting the BTM_BL_CONN_EVT
   * event */
@@ -101,5 +101,5 @@ index 60a3a17..5d36ef9 100644
    btm_acl_created(bda, p_dev_rec->dev_class, p_dev_rec->sec_bd_name, handle,
                    HCI_ROLE_SLAVE, BT_TRANSPORT_BR_EDR);
 -- 
-2.7.4
+2.17.1
 

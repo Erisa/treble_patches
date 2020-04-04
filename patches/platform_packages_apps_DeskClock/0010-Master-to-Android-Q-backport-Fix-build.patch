@@ -1,0 +1,24 @@
+From 8256fa44f303af89c7692c87e87d66c1d21ba5bc Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Wed, 4 Dec 2019 23:57:45 +0100
+Subject: [PATCH 10/10] Master to Android Q backport: Fix build
+
+Change-Id: Id1c79bf1f54ccbc00cbb657768ccd4123e84de23
+---
+ Android.bp | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index ad806d763..ec6d1feb2 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -26,6 +26,4 @@ android_app {
+         "androidx.gridlayout_gridlayout",
+         "androidx.recyclerview_recyclerview",
+     ],
+-
+-    aaptflags: ["--legacy"],
+ }
+-- 
+2.17.1
+

@@ -1,0 +1,30 @@
+From 535160377a285603f2b882422a3bc8cc32344847 Mon Sep 17 00:00:00 2001
+From: Colin Cross <ccross@android.com>
+Date: Thu, 20 Jun 2019 16:57:52 -0700
+Subject: [PATCH 03/10] Pass --legacy to aapt2 compile for DeskClock
+
+This module produces warnings that are treated as errors if --legacy
+is not passed.  --legacy is no longer being passed by default, so
+add it here.
+
+Bug: 135627311
+Test: m java
+Change-Id: I2be9480c59f0d09f9814f8f18bd1cd986a1ac752
+---
+ Android.bp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Android.bp b/Android.bp
+index 355ec48b9..488850836 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -22,4 +22,6 @@ android_app {
+         "android-support-v7-preference",
+         "android-support-v7-recyclerview",
+     ],
++
++    aaptflags: ["--legacy"],
+ }
+-- 
+2.17.1
+

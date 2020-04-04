@@ -1,0 +1,614 @@
+From 2042e4ea694d78b50e7cc98dfc7bf22a7c1d74c7 Mon Sep 17 00:00:00 2001
+From: Raman Tenneti <rtenneti@google.com>
+Date: Wed, 6 Nov 2019 19:23:34 -0800
+Subject: [PATCH 07/10] AOSP/DeskClock - Updated to sdkVersion 29.
+
+BUG: 133177396
+BUG: 143990962
+
+Test: manual - Tested the DeskClock UI manually and tested the alarm, stopwatch and timer.
+
+$ make -j 40
+
+$ ls -l out/target/product/generic/system/product/app/DeskClock/DeskClock.apk
+-rw-r--r-- 1 rtenneti primarygroup 6432279 Nov  6 19:07 out/target/product/generic/system/product/app/DeskClock/DeskClock.apk
+
+$ adb install -r out/target/product/generic/system/product/app/DeskClock/DeskClock.apk
+
++ Verified by setting up the alaram and waiting for the alarm to go off. "Clock has stopped" wasn't displayed. Noted there were no exceptions in the logs. (b/135587258)
+
+Change-Id: Ic946cb58ddc8430c034b73854080c586a1939d4a
+---
+ AndroidManifest.xml                           |   2 +-
+ .../deskclock/alarms/AlarmNotifications.java  | 266 ++++++++++++------
+ .../deskclock/data/StopwatchModel.java        |  17 +-
+ .../data/StopwatchNotificationBuilder.java    |  21 +-
+ .../android/deskclock/data/TimerModel.java    |  13 +
+ .../data/TimerNotificationBuilder.java        |  52 ++--
+ 6 files changed, 248 insertions(+), 123 deletions(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 487361e38..18eef5cce 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -22,7 +22,7 @@
+     <original-package android:name="com.android.alarmclock" />
+     <original-package android:name="com.android.deskclock" />
+ 
+-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="25" />
++    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="29" />
+ 
+     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+     <uses-permission android:name="android.permission.WAKE_LOCK" />
+diff --git a/src/com/android/deskclock/alarms/AlarmNotifications.java b/src/com/android/deskclock/alarms/AlarmNotifications.java
+index 3e2c7e35c..17912717c 100644
+--- a/src/com/android/deskclock/alarms/AlarmNotifications.java
++++ b/src/com/android/deskclock/alarms/AlarmNotifications.java
+@@ -17,6 +17,7 @@ package com.android.deskclock.alarms;
+ 
+ import android.annotation.TargetApi;
+ import android.app.Notification;
++import android.app.NotificationChannel;
+ import android.app.NotificationManager;
+ import android.app.PendingIntent;
+ import android.app.Service;
+@@ -46,6 +47,47 @@ import java.util.Objects;
+ final class AlarmNotifications {
+     static final String EXTRA_NOTIFICATION_ID = "extra_notification_id";
+ 
++    /**
++     * Notification channel containing all low priority notifications.
++     */
++    private static final String ALARM_LOW_PRIORITY_NOTIFICATION_CHANNEL_ID =
++            "alarmLowPriorityNotification";
++
++    /**
++     * Notification channel containing all high priority notifications.
++     */
++    private static final String ALARM_HIGH_PRIORITY_NOTIFICATION_CHANNEL_ID =
++            "alarmHighPriorityNotification";
++
++    /**
++     * Notification channel containing all upcoming update notifications.
++     */
++    private static final String ALARM_UPDATE_UPCOMING_NOTIFICATION_CHANNEL_ID =
++            "alarmUpdateUpcomingNotification";
++
++    /**
++     * Notification channel containing all missed update notifications.
++     */
++    private static final String ALARM_UPDATE_MISSED_NOTIFICATION_CHANNEL_ID =
++            "alarmUpdateMissedNotification";
++
++    /**
++     * Notification channel containing all snooze notifications.
++     */
++    private static final String ALARM_SNOOZE_NOTIFICATION_CHANNEL_ID =
++            "alarmSnoozeNotification";
++
++    /**
++     * Notification channel containing all missed notifications.
++     */
++    private static final String ALARM_MISSED_NOTIFICATION_CHANNEL_ID =
++            "alarmMissedNotification";
++
++    /**
++     * Notification channel containing all alarm notifications.
++     */
++    private static final String ALARM_NOTIFICATION_CHANNEL_ID = "alarmNotification";
++
+     /**
+      * Formats times such that chronological order and lexicographical order agree.
+      */
+@@ -86,19 +128,21 @@ final class AlarmNotifications {
+             AlarmInstance instance) {
+         LogUtils.v("Displaying low priority notification for alarm instance: " + instance.mId);
+ 
+-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+-                .setShowWhen(false)
+-                .setContentTitle(context.getString(
+-                        R.string.alarm_alert_predismiss_title))
+-                .setContentText(AlarmUtils.getAlarmText(context, instance, true /* includeLabel */))
+-                .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                .setSmallIcon(R.drawable.stat_notify_alarm)
+-                .setAutoCancel(false)
+-                .setSortKey(createSortKey(instance))
+-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setLocalOnly(true);
++        NotificationCompat.Builder builder = new NotificationCompat.Builder(
++                 context, ALARM_LOW_PRIORITY_NOTIFICATION_CHANNEL_ID)
++                         .setShowWhen(false)
++                        .setContentTitle(context.getString(
++                                R.string.alarm_alert_predismiss_title))
++                        .setContentText(AlarmUtils.getAlarmText(
++                                context, instance, true /* includeLabel */))
++                        .setColor(ContextCompat.getColor(context, R.color.default_background))
++                        .setSmallIcon(R.drawable.stat_notify_alarm)
++                        .setAutoCancel(false)
++                        .setSortKey(createSortKey(instance))
++                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setLocalOnly(true);
+ 
+         if (Utils.isNOrLater()) {
+             builder.setGroup(UPCOMING_GROUP_KEY);
+@@ -126,6 +170,13 @@ final class AlarmNotifications {
+                 viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+ 
+         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_LOW_PRIORITY_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            nm.createNotificationChannel(channel);
++        }
+         final Notification notification = builder.build();
+         nm.notify(id, notification);
+         updateUpcomingAlarmGroupNotification(context, -1, notification);
+@@ -135,18 +186,21 @@ final class AlarmNotifications {
+             AlarmInstance instance) {
+         LogUtils.v("Displaying high priority notification for alarm instance: " + instance.mId);
+ 
+-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+-                .setShowWhen(false)
+-                .setContentTitle(context.getString(R.string.alarm_alert_predismiss_title))
+-                .setContentText(AlarmUtils.getAlarmText(context, instance, true /* includeLabel */))
+-                .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                .setSmallIcon(R.drawable.stat_notify_alarm)
+-                .setAutoCancel(false)
+-                .setSortKey(createSortKey(instance))
+-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setLocalOnly(true);
++        NotificationCompat.Builder builder = new NotificationCompat.Builder(
++                context, ALARM_HIGH_PRIORITY_NOTIFICATION_CHANNEL_ID)
++                        .setShowWhen(false)
++                        .setContentTitle(context.getString(
++                                R.string.alarm_alert_predismiss_title))
++                        .setContentText(AlarmUtils.getAlarmText(
++                                context, instance, true /* includeLabel */))
++                        .setColor(ContextCompat.getColor(context, R.color.default_background))
++                        .setSmallIcon(R.drawable.stat_notify_alarm)
++                        .setAutoCancel(false)
++                        .setSortKey(createSortKey(instance))
++                        .setPriority(NotificationCompat.PRIORITY_HIGH)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setLocalOnly(true);
+ 
+         if (Utils.isNOrLater()) {
+             builder.setGroup(UPCOMING_GROUP_KEY);
+@@ -167,6 +221,13 @@ final class AlarmNotifications {
+                 viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+ 
+         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_HIGH_PRIORITY_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            nm.createNotificationChannel(channel);
++        }
+         final Notification notification = builder.build();
+         nm.notify(id, notification);
+         updateUpcomingAlarmGroupNotification(context, -1, notification);
+@@ -232,6 +293,13 @@ final class AlarmNotifications {
+         }
+ 
+         final NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_UPDATE_UPCOMING_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            nm.createNotificationChannel(channel);
++        }
+ 
+         final Notification firstUpcoming = getFirstActiveNotification(context, UPCOMING_GROUP_KEY,
+                 canceledNotificationId, postedNotification);
+@@ -243,18 +311,19 @@ final class AlarmNotifications {
+         Notification summary = getActiveGroupSummaryNotification(context, UPCOMING_GROUP_KEY);
+         if (summary == null
+                 || !Objects.equals(summary.contentIntent, firstUpcoming.contentIntent)) {
+-            summary = new NotificationCompat.Builder(context)
+-                    .setShowWhen(false)
+-                    .setContentIntent(firstUpcoming.contentIntent)
+-                    .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                    .setSmallIcon(R.drawable.stat_notify_alarm)
+-                    .setGroup(UPCOMING_GROUP_KEY)
+-                    .setGroupSummary(true)
+-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+-                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                    .setLocalOnly(true)
+-                    .build();
++            summary = new NotificationCompat.Builder(
++                    context, ALARM_UPDATE_UPCOMING_NOTIFICATION_CHANNEL_ID)
++                            .setShowWhen(false)
++                            .setContentIntent(firstUpcoming.contentIntent)
++                            .setColor(ContextCompat.getColor(context, R.color.default_background))
++                            .setSmallIcon(R.drawable.stat_notify_alarm)
++                            .setGroup(UPCOMING_GROUP_KEY)
++                            .setGroupSummary(true)
++                            .setPriority(NotificationCompat.PRIORITY_HIGH)
++                            .setCategory(NotificationCompat.CATEGORY_ALARM)
++                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                            .setLocalOnly(true)
++                            .build();
+             nm.notify(ALARM_GROUP_NOTIFICATION_ID, summary);
+         }
+     }
+@@ -266,6 +335,12 @@ final class AlarmNotifications {
+         }
+ 
+         final NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_UPDATE_MISSED_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++        }
+ 
+         final Notification firstMissed = getFirstActiveNotification(context, MISSED_GROUP_KEY,
+                 canceledNotificationId, postedNotification);
+@@ -277,18 +352,19 @@ final class AlarmNotifications {
+         Notification summary = getActiveGroupSummaryNotification(context, MISSED_GROUP_KEY);
+         if (summary == null
+                 || !Objects.equals(summary.contentIntent, firstMissed.contentIntent)) {
+-            summary = new NotificationCompat.Builder(context)
+-                    .setShowWhen(false)
+-                    .setContentIntent(firstMissed.contentIntent)
+-                    .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                    .setSmallIcon(R.drawable.stat_notify_alarm)
+-                    .setGroup(MISSED_GROUP_KEY)
+-                    .setGroupSummary(true)
+-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+-                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                    .setLocalOnly(true)
+-                    .build();
++            summary = new NotificationCompat.Builder(
++                    context, ALARM_UPDATE_MISSED_NOTIFICATION_CHANNEL_ID)
++                            .setShowWhen(false)
++                            .setContentIntent(firstMissed.contentIntent)
++                            .setColor(ContextCompat.getColor(context, R.color.default_background))
++                            .setSmallIcon(R.drawable.stat_notify_alarm)
++                            .setGroup(MISSED_GROUP_KEY)
++                            .setGroupSummary(true)
++                            .setPriority(NotificationCompat.PRIORITY_HIGH)
++                            .setCategory(NotificationCompat.CATEGORY_ALARM)
++                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                            .setLocalOnly(true)
++                            .build();
+             nm.notify(ALARM_GROUP_MISSED_NOTIFICATION_ID, summary);
+         }
+     }
+@@ -297,19 +373,20 @@ final class AlarmNotifications {
+             AlarmInstance instance) {
+         LogUtils.v("Displaying snoozed notification for alarm instance: " + instance.mId);
+ 
+-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+-                .setShowWhen(false)
+-                .setContentTitle(instance.getLabelOrDefault(context))
+-                .setContentText(context.getString(R.string.alarm_alert_snooze_until,
+-                        AlarmUtils.getFormattedTime(context, instance.getAlarmTime())))
+-                .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                .setSmallIcon(R.drawable.stat_notify_alarm)
+-                .setAutoCancel(false)
+-                .setSortKey(createSortKey(instance))
+-                .setPriority(NotificationCompat.PRIORITY_MAX)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setLocalOnly(true);
++        NotificationCompat.Builder builder = new NotificationCompat.Builder(
++                context, ALARM_SNOOZE_NOTIFICATION_CHANNEL_ID)
++                        .setShowWhen(false)
++                        .setContentTitle(instance.getLabelOrDefault(context))
++                        .setContentText(context.getString(R.string.alarm_alert_snooze_until,
++                                AlarmUtils.getFormattedTime(context, instance.getAlarmTime())))
++                        .setColor(ContextCompat.getColor(context, R.color.default_background))
++                        .setSmallIcon(R.drawable.stat_notify_alarm)
++                        .setAutoCancel(false)
++                        .setSortKey(createSortKey(instance))
++                        .setPriority(NotificationCompat.PRIORITY_MAX)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setLocalOnly(true);
+ 
+         if (Utils.isNOrLater()) {
+             builder.setGroup(UPCOMING_GROUP_KEY);
+@@ -330,6 +407,13 @@ final class AlarmNotifications {
+                 viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+ 
+         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_SNOOZE_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            nm.createNotificationChannel(channel);
++        }
+         final Notification notification = builder.build();
+         nm.notify(id, notification);
+         updateUpcomingAlarmGroupNotification(context, -1, notification);
+@@ -341,18 +425,19 @@ final class AlarmNotifications {
+ 
+         String label = instance.mLabel;
+         String alarmTime = AlarmUtils.getFormattedTime(context, instance.getAlarmTime());
+-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+-                .setShowWhen(false)
+-                .setContentTitle(context.getString(R.string.alarm_missed_title))
+-                .setContentText(instance.mLabel.isEmpty() ? alarmTime :
+-                        context.getString(R.string.alarm_missed_text, alarmTime, label))
+-                .setColor(ContextCompat.getColor(context, R.color.default_background))
+-                .setSortKey(createSortKey(instance))
+-                .setSmallIcon(R.drawable.stat_notify_alarm)
+-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setLocalOnly(true);
++        NotificationCompat.Builder builder = new NotificationCompat.Builder(
++                context, ALARM_MISSED_NOTIFICATION_CHANNEL_ID)
++                        .setShowWhen(false)
++                        .setContentTitle(context.getString(R.string.alarm_missed_title))
++                        .setContentText(instance.mLabel.isEmpty() ? alarmTime :
++                                context.getString(R.string.alarm_missed_text, alarmTime, label))
++                        .setColor(ContextCompat.getColor(context, R.color.default_background))
++                        .setSortKey(createSortKey(instance))
++                        .setSmallIcon(R.drawable.stat_notify_alarm)
++                        .setPriority(NotificationCompat.PRIORITY_HIGH)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setLocalOnly(true);
+ 
+         if (Utils.isNOrLater()) {
+             builder.setGroup(MISSED_GROUP_KEY);
+@@ -375,6 +460,13 @@ final class AlarmNotifications {
+                 showAndDismiss, PendingIntent.FLAG_UPDATE_CURRENT));
+ 
+         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    ALARM_MISSED_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            nm.createNotificationChannel(channel);
++        }
+         final Notification notification = builder.build();
+         nm.notify(id, notification);
+         updateMissedAlarmGroupNotification(context, -1, notification);
+@@ -384,18 +476,20 @@ final class AlarmNotifications {
+         LogUtils.v("Displaying alarm notification for alarm instance: " + instance.mId);
+ 
+         Resources resources = service.getResources();
+-        NotificationCompat.Builder notification = new NotificationCompat.Builder(service)
+-                .setContentTitle(instance.getLabelOrDefault(service))
+-                .setContentText(AlarmUtils.getFormattedTime(service, instance.getAlarmTime()))
+-                .setColor(ContextCompat.getColor(service, R.color.default_background))
+-                .setSmallIcon(R.drawable.stat_notify_alarm)
+-                .setOngoing(true)
+-                .setAutoCancel(false)
+-                .setDefaults(NotificationCompat.DEFAULT_LIGHTS)
+-                .setWhen(0)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setLocalOnly(true);
++        NotificationCompat.Builder notification = new NotificationCompat.Builder(
++                service, ALARM_NOTIFICATION_CHANNEL_ID)
++                        .setContentTitle(instance.getLabelOrDefault(service))
++                        .setContentText(AlarmUtils.getFormattedTime(
++                                service, instance.getAlarmTime()))
++                        .setColor(ContextCompat.getColor(service, R.color.default_background))
++                        .setSmallIcon(R.drawable.stat_notify_alarm)
++                        .setOngoing(true)
++                        .setAutoCancel(false)
++                        .setDefaults(NotificationCompat.DEFAULT_LIGHTS)
++                        .setWhen(0)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setLocalOnly(true);
+ 
+         // Setup Snooze Action
+         Intent snoozeIntent = AlarmStateManager.createStateChangeIntent(service,
+diff --git a/src/com/android/deskclock/data/StopwatchModel.java b/src/com/android/deskclock/data/StopwatchModel.java
+index 3d4bc6086..6fdf38518 100644
+--- a/src/com/android/deskclock/data/StopwatchModel.java
++++ b/src/com/android/deskclock/data/StopwatchModel.java
+@@ -17,6 +17,7 @@
+ package com.android.deskclock.data;
+ 
+ import android.app.Notification;
++import android.app.NotificationChannel;
+ import android.content.BroadcastReceiver;
+ import android.content.Context;
+ import android.content.Intent;
+@@ -25,6 +26,8 @@ import android.content.SharedPreferences;
+ import androidx.annotation.VisibleForTesting;
+ import androidx.core.app.NotificationManagerCompat;
+ 
++import com.android.deskclock.R;
++
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
+@@ -34,6 +37,11 @@ import java.util.List;
+  */
+ final class StopwatchModel {
+ 
++    /**
++     * Notification channel containing all stopwatch notifications.
++     */
++    static final String STOPWATCH_NOTIFICATION_CHANNEL_ID = "StopwatchNotification";
++
+     private final Context mContext;
+ 
+     private final SharedPreferences mPrefs;
+@@ -66,6 +74,13 @@ final class StopwatchModel {
+         mPrefs = prefs;
+         mNotificationModel = notificationModel;
+         mNotificationManager = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    STOPWATCH_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            mNotificationManager.createNotificationChannel(channel);
++        }
+ 
+         // Update stopwatch notification when locale changes.
+         final IntentFilter localeBroadcastFilter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
+@@ -252,4 +267,4 @@ final class StopwatchModel {
+             updateNotification();
+         }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/com/android/deskclock/data/StopwatchNotificationBuilder.java b/src/com/android/deskclock/data/StopwatchNotificationBuilder.java
+index 4ca8c7b37..ab1db5298 100644
+--- a/src/com/android/deskclock/data/StopwatchNotificationBuilder.java
++++ b/src/com/android/deskclock/data/StopwatchNotificationBuilder.java
+@@ -127,16 +127,17 @@ class StopwatchNotificationBuilder {
+             content.setViewVisibility(R.id.state, VISIBLE);
+         }
+ 
+-        final Builder notification = new NotificationCompat.Builder(context)
+-                .setLocalOnly(true)
+-                .setOngoing(running)
+-                .setCustomContentView(content)
+-                .setContentIntent(pendingShowApp)
+-                .setAutoCancel(stopwatch.isPaused())
+-                .setPriority(Notification.PRIORITY_MAX)
+-                .setSmallIcon(R.drawable.stat_notify_stopwatch)
+-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+-                .setColor(ContextCompat.getColor(context, R.color.default_background));
++        final Builder notification = new NotificationCompat.Builder(
++                context, StopwatchModel.STOPWATCH_NOTIFICATION_CHANNEL_ID)
++                        .setLocalOnly(true)
++                        .setOngoing(running)
++                        .setCustomContentView(content)
++                        .setContentIntent(pendingShowApp)
++                        .setAutoCancel(stopwatch.isPaused())
++                        .setPriority(Notification.PRIORITY_MAX)
++                        .setSmallIcon(R.drawable.stat_notify_stopwatch)
++                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
++                        .setColor(ContextCompat.getColor(context, R.color.default_background));
+ 
+         if (Utils.isNOrLater()) {
+             notification.setGroup(nm.getStopwatchNotificationGroupKey());
+diff --git a/src/com/android/deskclock/data/TimerModel.java b/src/com/android/deskclock/data/TimerModel.java
+index d24a5a65b..272185f18 100644
+--- a/src/com/android/deskclock/data/TimerModel.java
++++ b/src/com/android/deskclock/data/TimerModel.java
+@@ -19,6 +19,7 @@ package com.android.deskclock.data;
+ import android.annotation.SuppressLint;
+ import android.app.AlarmManager;
+ import android.app.Notification;
++import android.app.NotificationChannel;
+ import android.app.PendingIntent;
+ import android.app.Service;
+ import android.content.BroadcastReceiver;
+@@ -56,6 +57,11 @@ import static com.android.deskclock.data.Timer.State.RESET;
+  */
+ final class TimerModel {
+ 
++    /**
++     * Notification channel containing all TimerModel notifications.
++     */
++    static final String TIMER_MODEL_NOTIFICATION_CHANNEL_ID = "TimerModelNotification";
++
+     /**
+      * Running timers less than this threshold are left running/expired; greater than this
+      * threshold are considered missed.
+@@ -136,6 +142,13 @@ final class TimerModel {
+         mRingtoneModel = ringtoneModel;
+         mNotificationModel = notificationModel;
+         mNotificationManager = NotificationManagerCompat.from(context);
++        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                    TIMER_MODEL_NOTIFICATION_CHANNEL_ID,
++                    context.getString(R.string.default_label),
++                    NotificationManagerCompat.IMPORTANCE_DEFAULT);
++            mNotificationManager.createNotificationChannel(channel);
++        }
+ 
+         mAlarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+ 
+diff --git a/src/com/android/deskclock/data/TimerNotificationBuilder.java b/src/com/android/deskclock/data/TimerNotificationBuilder.java
+index 4d93053c3..e81a2f4b7 100644
+--- a/src/com/android/deskclock/data/TimerNotificationBuilder.java
++++ b/src/com/android/deskclock/data/TimerNotificationBuilder.java
+@@ -148,19 +148,20 @@ class TimerNotificationBuilder {
+                 PendingIntent.getService(context, REQUEST_CODE_UPCOMING, showApp,
+                         PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+ 
+-        final Builder notification = new NotificationCompat.Builder(context)
+-                .setOngoing(true)
+-                .setLocalOnly(true)
+-                .setShowWhen(false)
+-                .setAutoCancel(false)
+-                .setContentIntent(pendingShowApp)
+-                .setPriority(Notification.PRIORITY_HIGH)
+-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+-                .setSmallIcon(R.drawable.stat_notify_timer)
+-                .setSortKey(nm.getTimerNotificationSortKey())
+-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+-                .setColor(ContextCompat.getColor(context, R.color.default_background));
++        final Builder notification = new NotificationCompat.Builder(
++                context, TimerModel.TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
++                        .setOngoing(true)
++                        .setLocalOnly(true)
++                        .setShowWhen(false)
++                        .setAutoCancel(false)
++                        .setContentIntent(pendingShowApp)
++                        .setPriority(Notification.PRIORITY_HIGH)
++                        .setCategory(NotificationCompat.CATEGORY_ALARM)
++                        .setSmallIcon(R.drawable.stat_notify_timer)
++                        .setSortKey(nm.getTimerNotificationSortKey())
++                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
++                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
++                        .setColor(ContextCompat.getColor(context, R.color.default_background));
+ 
+         for (Action action : actions) {
+             notification.addAction(action);
+@@ -261,18 +262,19 @@ class TimerNotificationBuilder {
+                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+         final PendingIntent pendingFullScreen = Utils.pendingActivityIntent(context, fullScreen);
+ 
+-        final Builder notification = new NotificationCompat.Builder(context)
+-                .setOngoing(true)
+-                .setLocalOnly(true)
+-                .setShowWhen(false)
+-                .setAutoCancel(false)
+-                .setContentIntent(contentIntent)
+-                .setPriority(Notification.PRIORITY_MAX)
+-                .setDefaults(Notification.DEFAULT_LIGHTS)
+-                .setSmallIcon(R.drawable.stat_notify_timer)
+-                .setFullScreenIntent(pendingFullScreen, true)
+-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+-                .setColor(ContextCompat.getColor(context, R.color.default_background));
++        final Builder notification = new NotificationCompat.Builder(
++                context, TimerModel.TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
++                        .setOngoing(true)
++                        .setLocalOnly(true)
++                        .setShowWhen(false)
++                        .setAutoCancel(false)
++                        .setContentIntent(contentIntent)
++                        .setPriority(Notification.PRIORITY_MAX)
++                        .setDefaults(Notification.DEFAULT_LIGHTS)
++                        .setSmallIcon(R.drawable.stat_notify_timer)
++                        .setFullScreenIntent(pendingFullScreen, true)
++                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
++                        .setColor(ContextCompat.getColor(context, R.color.default_background));
+ 
+         for (Action action : actions) {
+             notification.addAction(action);
+-- 
+2.17.1
+

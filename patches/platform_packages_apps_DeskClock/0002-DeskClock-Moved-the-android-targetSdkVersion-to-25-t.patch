@@ -1,0 +1,77 @@
+From e6351b3b85b2f5d53d43e4797d3346ce22a5fa6f Mon Sep 17 00:00:00 2001
+From: Raman Tenneti <rtenneti@google.com>
+Date: Thu, 20 Jun 2019 16:06:57 -0700
+Subject: [PATCH 02/10] DeskClock - Moved the android:targetSdkVersion to 25 to
+ fix "Clock has stopped" message displayed when Alarm trigger.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
++ Added android.permission.FOREGROUND_SERVICE permission to fix the following exception.
+
+  06-20 22:07:00.155  4690  4690 E AndroidRuntime: java.lang.RuntimeException: Unable to start service com.android.deskclock.alarms.AlarmService@bd4eda3 with Intent { act=change_state cat=[ALARM_MANAGER] dat=content://com.android.deskclock/instances/1 flg=0x10000004 cmp=com.android.deskclock/.alarms.AlarmService (has extras) }: java.lang.SecurityException: Permission Denial: startForeground from pid=4690, uid=10061 requires android.permission.FOREGROUND_SERVICE
+
+Bug: 135587258
+
+Test: manual - Ran the following tests on Pixel phone. Tested the clock for Alarm.
+
+$ make -j 40
+ -rw-r--r-- 1 rtenneti primarygroup 4842448 Jun 20 15:17 ./target/product/marlin/system/product/app/DeskClock/DeskClock.apk
+
+$ adb install -d -r out/target/product/marlin/system/product/app/DeskClock/DeskClock.apk
+  Performing Streamed Install
+  Success
+
+$ adb logcat -c
+$ adb logcat >> ~/temp/logcat/0620/logcat.out.0620.1603
+
++ Set up the alarm and wait for the alarm to go off. The following is from the logcat output. "Clock has stopped" wasn't displayed. Noted there were no exceptions in the logs.
+
+06-19 11:37:03.706   929   929 D ConditionProviders.SCP: evaluateSubscriptionLocked cal=ScheduleCalendar[mDays={1, 2, 3, 4, 5, 6, 7}, mSchedule=ScheduleInfo{days=[1, 2, 3, 4, 5, 6, 7], startHour=22, startMinute=0, endHour=7, endMinute=0, exitAtAlarm=true, nextAlarm=Thu Jan 01 00:00:00 GMT 1970 (0)}], now=Wed Jun 19 11:37:03 GMT 2019 (1560944223706), nextUserAlarmTime=Thu Jun 20 11:37:00 GMT 2019 (1561030620000)
+06-19 11:37:03.706   929   929 D ConditionProviders.SCP: notifyCondition condition://android/schedule?days=1.2.3.4.5.6.7&start=22.0&end=7.0&exitAtAlarm=true STATE_FALSE reason=!meetsSchedule
+06-19 11:37:03.708   929   929 D ConditionProviders.SCP: Scheduling evaluate for Wed Jun 19 22:00:00 GMT 2019 (1560981600000), in +10h22m56s294ms, now=Wed Jun 19 11:37:03 GMT 2019 (1560944223706)
+06-19 11:37:03.711  2915  2915 D KeyguardClockSwitch: Updating clock: 1137
+06-19 11:37:03.719  4385  4385 I AlarmClock: Setting upcoming AlarmClockInfo for alarm: 4
+06-19 11:37:03.721  4385  4385 D Events  : [Alarm] [Dismiss] [DeskClock]
+06-19 11:37:03.722   929   929 D ConditionProviders.SCP: onReceive android.app.action.NEXT_ALARM_CLOCK_CHANGED
+06-19 11:37:03.723   929   929 D ConditionProviders.SCP: evaluateSubscriptionLocked cal=ScheduleCalendar[mDays={1, 2, 3, 4, 5, 6, 7}, mSchedule=ScheduleInfo{days=[1, 2, 3, 4, 5, 6, 7], startHour=22, startMinute=0, endHour=7, endMinute=0, exitAtAlarm=true, nextAlarm=Thu Jun 20 11:37:00 GMT 2019 (1561030620000)}], now=Wed Jun 19 11:37:03 GMT 2019 (1560944223722), nextUserAlarmTime=Thu Jun 20 11:37:00 GMT 2019 (1561030620000)
+06-19 11:37:03.723   929   929 D ConditionProviders.SCP: notifyCondition condition://android/schedule?days=1.2.3.4.5.6.7&start=22.0&end=7.0&exitAtAlarm=true STATE_FALSE reason=!meetsSchedule
+06-19 11:37:03.723   929   929 D ConditionProviders.SCP: Scheduling evaluate for Wed Jun 19 22:00:00 GMT 2019 (1560981600000), in +10h22m56s278ms, now=Wed Jun 19 11:37:03 GMT 2019 (1560944223722)
+06-19 11:37:03.729   929   988 I DropBoxManagerService: add tag=system_app_strictmode isTagEnabled=true flags=0x2
+06-19 11:37:03.747  2915  2915 D KeyguardClockSwitch: Updating clock: 1137
+06-19 11:37:03.765  4385  4385 V AlarmClock: AlarmService.onStartCommand() with Intent { act=STOP_ALARM dat=content://com.android.deskclock/instances/3 cmp=com.android.deskclock/.alarms.AlarmService }
+06-19 11:37:03.765  4385  4385 V AlarmClock: AlarmService.stop with instance: 3
+06-19 11:37:03.765  4385  4385 V AlarmClock: AlarmKlaxon.stop()
+06-19 11:37:03.765  4385  4385 D AsyncRingtonePlayer: Posting stop.
+06-19 11:37:03.765  4385  5050 I AsyncRingtonePlayer: Stop ringtone via android.media.Ringtone.
+06-19 11:37:03.767  4385  5050 D AsyncRingtonePlayer: Ringtone.stop() invoked.
+06-19 11:37:03.767   806  3934 D NuPlayerDriver: reset(0xed43b600) at state 5
+
+Change-Id: I75a96e1ed4acebd118c212b51b7d0e57482a66bb
+---
+ AndroidManifest.xml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index cf4271338..487361e38 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -22,13 +22,14 @@
+     <original-package android:name="com.android.alarmclock" />
+     <original-package android:name="com.android.deskclock" />
+ 
+-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28" />
++    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="25" />
+ 
+     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+     <uses-permission android:name="android.permission.WAKE_LOCK" />
+     <uses-permission android:name="android.permission.VIBRATE" />
+     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+ 
+     <!-- WRITE_SETTINGS is required to record the upcoming alarm prior to L -->
+     <uses-permission
+-- 
+2.17.1
+
